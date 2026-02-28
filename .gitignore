@@ -1,0 +1,54 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Scraped data (large, raw HTML cache)
+data/raw/
+
+# Kaggle source files (re-downloadable)
+data/kaggle/
+
+# Large derived data files (regenerate by running scraper + preprocess.py)
+data/processed/transcripts.csv
+data/processed/speaker_turns.csv
+data/processed/weak_labels_partial.csv
+
+# Fine-tuned model weights (large binaries - host on HuggingFace Hub instead)
+models/
+
+# MLflow tracking (local only)
+mlruns/
+
+# Environment variables
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Secrets
+*.pem
+*.key
+CLAUDE.md
+agent.instructions.md
+project-plan-press-conference-sentiment-analyzer.md

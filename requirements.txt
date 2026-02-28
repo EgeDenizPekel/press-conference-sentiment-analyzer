@@ -1,0 +1,26 @@
+# Data
+pandas>=2.0
+requests>=2.31
+beautifulsoup4>=4.12
+lxml>=4.9
+
+# NLP
+transformers>=4.40
+torch>=2.2
+datasets>=2.18
+spacy>=3.7
+scikit-learn>=1.4
+
+# Experiment tracking
+mlflow>=2.12
+
+# API
+fastapi>=0.111
+uvicorn[standard]>=0.29
+
+# Notebooks
+jupyter>=1.0
+matplotlib>=3.8
+seaborn>=0.13
+scipy>=1.13
+statsmodels>=0.14
