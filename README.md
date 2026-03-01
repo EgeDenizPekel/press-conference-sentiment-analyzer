@@ -28,7 +28,7 @@ This is a data science project with a research angle - not just an NLP demo. The
 
 | Model | Accuracy | Macro-F1 | Notes |
 |-------|----------|----------|-------|
-| **Fine-tuned RoBERTa (ours)** | **92.0%** | **0.932** | Trained on 2,050 sports-domain turns |
+| **[Fine-tuned RoBERTa (ours)](https://huggingface.co/EgeDenizPekel/nba-press-sentiment-roberta)** | **92.0%** | **0.932** | Trained on 2,050 sports-domain turns |
 | Twitter RoBERTa (baseline) | 54.0% | 0.467 | Best off-the-shelf model |
 | DistilBERT SST-2 (baseline) | 52.0% | 0.380 | 2-class only |
 | FinBERT (baseline) | 34.0% | 0.288 | Skews NEUTRAL on sports text |
@@ -158,7 +158,7 @@ press-conference-sentiment-analyzer/
 │       ├── score.py                  # Run fine-tuned model on all speaker turns
 │       └── correlations.py           # Join sentiment to games, run correlation analyses
 ├── models/
-│   └── fine-tuned-sports-sentiment/  # Saved model weights (gitignored, hosted on HF Hub)
+│   └── fine-tuned-sports-sentiment/  # Saved model weights (gitignored, hosted on HF Hub: EgeDenizPekel/nba-press-sentiment-roberta)
 ├── mlruns/                           # MLflow experiment tracking (gitignored)
 ├── api/                              # FastAPI backend (Phase 5)
 │   ├── main.py                       # App entry, CORS, lifespan data loading
@@ -301,7 +301,7 @@ Speaker turns are joined to game outcomes using date and team pair (parsed from 
 - [x] Phase 3 - Fine-tuning (92% accuracy, 0.932 macro-F1 on seed set)
 - [x] Phase 4 - Correlation analysis (Pearson, trajectory, series position; no significant correlation found)
 - [x] Phase 5 - FastAPI + React dashboard
-- [ ] Phase 6 - Deploy (Railway + Vercel + HuggingFace Hub)
+- [x] Model published to [Hugging Face Hub](https://huggingface.co/EgeDenizPekel/nba-press-sentiment-roberta)
 
 ---
 
