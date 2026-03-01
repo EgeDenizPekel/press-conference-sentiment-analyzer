@@ -28,6 +28,11 @@ data/processed/transcripts.csv
 data/processed/speaker_turns.csv
 data/processed/weak_labels_partial.csv
 
+# Phase 4 derived files (regenerate by running score.py + correlations.py)
+data/processed/sentiment_scores.csv
+data/processed/sentiment_game_joined.csv
+data/processed/game_sentiment_agg.csv
+
 # Fine-tuned model weights (large binaries - host on HuggingFace Hub instead)
 models/
 

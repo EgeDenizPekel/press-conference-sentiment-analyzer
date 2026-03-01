@@ -18,7 +18,7 @@ This is a data science project with a research angle - not just an NLP demo. The
 
 ---
 
-## Key Results (Phases 1-3 complete)
+## Key Results (Phases 1-4 complete)
 
 ### Corpus
 - **2,790 transcripts** scraped from ASAP Sports (Conference Finals + NBA Finals, 2013-2022)
@@ -46,6 +46,26 @@ Early stopping (patience=2) selected epoch 4 as the best checkpoint - val accura
 ![Confusion matrices](notebooks/03_confusion_matrices.png)
 
 The fine-tuned model achieves perfect recall on NEGATIVE turns. Remaining errors (4/50) are POSITIVE/NEUTRAL confusions - analytically-phrased post-win commentary that reads neutral in surface form but is positive in context.
+
+### Correlation Analysis Results (Phase 4)
+
+**Scored corpus:** 23,166 turns - 47% POSITIVE, 38% NEUTRAL, 15% NEGATIVE. Mean sentiment score: +0.328.
+
+**Game-day matching:** 10,881 turns matched to 141 game-day press conferences across 30 series (2013-2022).
+
+| Analysis | Result | p-value | n |
+|----------|--------|---------|---|
+| Sentiment vs same-game point differential | r = -0.088 | 0.297 | 141 |
+| Sentiment vs next-game point differential | r = -0.109 | 0.196 | 141 |
+| Sentiment vs % positive turns | r = -0.066 | 0.434 | 141 |
+
+No statistically significant correlation was found between press conference sentiment and game outcomes. This is itself a finding: coaches and players appear to manage their public tone independently of actual performance.
+
+**Series trajectory:** Sentiment rises monotonically from Game 1 (+0.29) to Game 6 (+0.47), suggesting increasingly positive framing as series approach conclusion - regardless of win/loss context.
+
+![Series trajectory](notebooks/04_series_trajectory.png)
+
+![Core finding](notebooks/05_core_finding.png)
 
 ---
 
@@ -95,11 +115,16 @@ press-conference-sentiment-analyzer/
 │       ├── labels_seed.csv           # 50 hand-labeled turns
 │       ├── baseline_predictions.csv  # 3-model baseline predictions on seed set
 │       ├── weak_labels.csv           # 2,000 GPT-4o-mini labels
-│       └── training_labels.csv       # Combined 2,050-turn training set
+│       ├── training_labels.csv       # Combined 2,050-turn training set
+│       ├── sentiment_scores.csv      # 23,166 turns with sentiment scores (gitignored)
+│       ├── sentiment_game_joined.csv # Turns joined to game outcomes (gitignored)
+│       └── game_sentiment_agg.csv    # One row per game with aggregate sentiment (gitignored)
 ├── notebooks/
 │   ├── 01_data_exploration.ipynb     # Corpus stats, speaker breakdown
 │   ├── 02_baseline_models.ipynb      # Baseline comparison, domain gap analysis
-│   └── 03_finetune_evaluation.ipynb  # Training curves, confusion matrices, error analysis
+│   ├── 03_finetune_evaluation.ipynb  # Training curves, confusion matrices, error analysis
+│   ├── 04_correlation_analysis.ipynb # Pearson, trajectory, series position charts
+│   └── 05_insights.ipynb             # Publication-quality charts for README
 ├── src/
 │   ├── scraper/
 │   │   ├── asap_scraper.py           # ASAP Sports crawler (numeric ID-based)
@@ -107,10 +132,13 @@ press-conference-sentiment-analyzer/
 │   ├── nlp/
 │   │   ├── preprocess.py             # Speaker turn extraction, date parsing
 │   │   └── sentiment.py              # BaselinePredictor, run_all_baselines()
-│   └── training/
-│       ├── label.py                  # GPT-4o-mini weak labeling with checkpointing
-│       ├── dataset.py                # HuggingFace DatasetDict builder
-│       └── finetune.py               # Trainer fine-tune + MLflow logging
+│   ├── training/
+│   │   ├── label.py                  # GPT-4o-mini weak labeling with checkpointing
+│   │   ├── dataset.py                # HuggingFace DatasetDict builder
+│   │   └── finetune.py               # Trainer fine-tune + MLflow logging
+│   └── analysis/
+│       ├── score.py                  # Run fine-tuned model on all speaker turns
+│       └── correlations.py           # Join sentiment to games, run correlation analyses
 ├── models/
 │   └── fine-tuned-sports-sentiment/  # Saved model weights (gitignored, hosted on HF Hub)
 ├── mlruns/                           # MLflow experiment tracking (gitignored)
@@ -160,6 +188,12 @@ python -m src.training.finetune
 
 # 7. Launch MLflow UI
 mlflow ui
+
+# 8. Score all turns with fine-tuned model
+python -m src.analysis.score
+
+# 9. Run correlation analyses
+python -m src.analysis.correlations
 ```
 
 ### Notebooks
@@ -168,7 +202,7 @@ mlflow ui
 jupyter lab
 ```
 
-Open notebooks in order: `01_data_exploration` -> `02_baseline_models` -> `03_finetune_evaluation`.
+Open notebooks in order: `01_data_exploration` -> `02_baseline_models` -> `03_finetune_evaluation` -> `04_correlation_analysis` -> `05_insights`.
 
 ---
 
@@ -186,10 +220,15 @@ GPT-4o-mini labeled 2,000 speaker turns using a 3-class schema with sports-speci
 ### Fine-tuning
 Base model: `cardiffnlp/twitter-roberta-base-sentiment` (chosen as best baseline). Training: 5 epochs, lr=2e-5, linear warmup 10%, batch size 16, early stopping patience=2. Label mapping preserves the base model's original LABEL_0/1/2 ordering (NEGATIVE=0, NEUTRAL=1, POSITIVE=2) to leverage pre-trained weight alignment.
 
+### Correlation Analysis
+Speaker turns are joined to game outcomes using date and team pair (parsed from ASAP Sports event names). Game-level aggregates are computed across all speakers combined. Four analyses are run: Pearson correlation between sentiment and point differential (same-game and next-game), sentiment trajectory by game number within series, and elimination game comparison.
+
 ### Limitations
 - Correlation analysis findings should not be interpreted as causal
 - Seed set is 50 turns - evaluation results may not generalize
 - Weak labels from GPT-4o-mini have ~15% uncertain cases (flagged with `gpt_confidence=0`)
+- Elimination game transcripts are not in the matched corpus (last game of each series was not captured by the scraper for most series) - the elimination game analysis is unavailable
+- Speaker-team attribution is not available; analyses use game-level aggregates across both teams combined
 
 ---
 
@@ -198,7 +237,7 @@ Base model: `cardiffnlp/twitter-roberta-base-sentiment` (chosen as best baseline
 - [x] Phase 1 - Data collection (2,790 transcripts)
 - [x] Phase 2 - Baseline NLP (54% best baseline on seed set)
 - [x] Phase 3 - Fine-tuning (92% accuracy, 0.932 macro-F1 on seed set)
-- [ ] Phase 4 - Correlation analysis (Pearson, logistic regression, trajectory)
+- [x] Phase 4 - Correlation analysis (Pearson, trajectory, series position; no significant correlation found)
 - [ ] Phase 5 - FastAPI + React dashboard
 - [ ] Phase 6 - Deploy (Railway + Vercel + HuggingFace Hub)
 
